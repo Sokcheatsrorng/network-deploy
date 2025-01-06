@@ -1,0 +1,104 @@
+// {
+//     "configurations": [
+//         {
+//             "name": "basic asset transfer",
+//             "type": "hlf-go",
+//             "request": "launch",
+//             "isCaas": false,
+//             "program": "${workspaceFolder}/cmd/main.go",
+//             "env": {
+//                 "CORE_CHAINCODE_ID_NAME": "chaincode-donation:v1"
+//             }
+//         }
+//     ]
+// }
+
+// testing 1 Org with Org
+// {
+//     "configurations": [
+//         {
+//             "name": "Debug as Org1",
+//             "type": "hlf-go",
+//             "request": "launch",
+//             "program": "${workspaceFolder}/cmd/main.go",
+//             "env": {
+//                 "CORE_PEER_LOCALMSPID": "OrgMSP1",
+//                 "CORE_PEER_MSPCONFIGPATH": "/path/to/crypto-config/peerOrganizations/org1/msp",
+//                 "FABRIC_LOGGING_SPEC": "DEBUG",
+//                 "CHAINCODE_ID": "donation_cc:v1"
+//             }
+//         }
+//     ]
+// }
+
+
+// testing with 3 organization 
+
+
+// {
+//     "configurations": [
+//         {
+//             "name": "Debug as Org1",
+//             "type": "hlf-go",
+//             "request": "launch",
+//             "program": "${workspaceFolder}/cmd/main.go",
+//             "env": {
+//                 "CORE_PEER_LOCALMSPID": "OrgMSP1",
+//                 "CORE_PEER_MSPCONFIGPATH": "/path/to/crypto-config/peerOrganizations/org1/msp",
+//                 "FABRIC_LOGGING_SPEC": "DEBUG",
+//                 "CHAINCODE_ID": "donation_cc:v1"
+//             }
+//         },
+//         {
+//             "name": "Debug as Org2",
+//             "type": "hlf-go",
+//             "request": "launch",
+//             "program": "${workspaceFolder}/cmd/main.go",
+//             "env": {
+//                 "CORE_PEER_LOCALMSPID": "OrgMSP2",
+//                 "CORE_PEER_MSPCONFIGPATH": "/path/to/crypto-config/peerOrganizations/org2/msp",
+//                 "FABRIC_LOGGING_SPEC": "DEBUG",
+//                 "CHAINCODE_ID": " :v1"
+//             }
+//         },
+//         {
+//             "name": "Debug as Org3",
+//             "type": "hlf-go",
+//             "request": "launch",
+//             "program": "${workspaceFolder}/cmd/main.go",
+//             "env": {
+//                 "CORE_PEER_LOCALMSPID": "OrgMSP3",
+//                 "CORE_PEER_MSPCONFIGPATH": "/path/to/crypto-config/peerOrganizations/org3/msp",
+//                 "FABRIC_LOGGING_SPEC": "DEBUG",
+//                 "CHAINCODE_ID": "donation_cc:v1"
+//             }
+//         }
+//     ]
+// }
+
+
+// define with specific Organization 
+{
+    "configurations": [
+        {
+            "name": "basic asset transfer",
+            "type": "hlf-go",
+            "request": "launch",
+            "isCaas": false,
+            "program": "${workspaceFolder}/cmd/main.go",
+            "env": {
+                "CORE_PEER_LOCALMSPID": "Org4MSP",
+                "FABRIC_LOGGING_SPEC": "DEBUG",
+                "CORE_CHAINCODE_ID_NAME": "chaincode-donation:v1",
+                "CORE_PEER_MSPCONFIGPATH": "${workspaceFolder}/crypto-config/peerOrganizations/org4.example.com/users/Admin@org4.example.com/msp",
+                "CORE_PEER_ADDRESS": "localhost:11051", // Update to Org4's peer address
+                "CORE_PEER_TLS_ENABLED": "true",
+                "CORE_PEER_TLS_ROOTCERT_FILE": "${workspaceFolder}/crypto-config/peerOrganizations/org4.example.com/peers/peer0.org4.example.com/tls/ca.crt"
+            }
+        }
+    ]
+}
+
+
+
+

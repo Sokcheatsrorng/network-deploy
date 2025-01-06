@@ -1,0 +1,95 @@
+---
+name: NAME_OF_ORGANIZATION_Network
+version: 1.0.0
+client:
+  organization: NAME_OF_ORGANIZATION
+  connection:
+    timeout:
+      peer:
+        endorser: '300'
+      orderer: '300'
+  credentialStore:
+    path: ./wallet
+    cryptoStore:
+      path: ./wallet
+
+channels:
+  idonatechannel:
+    orderers:
+      - orderer1.DOMAIN_OF_ORGANIZATION
+      - orderer2.DOMAIN_OF_ORGANIZATION
+      - orderer3.DOMAIN_OF_ORGANIZATION
+    peers:
+      peer1.DOMAIN_OF_ORGANIZATION:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+      peer2.DOMAIN_OF_ORGANIZATION:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+
+organizations:
+  NAME_OF_ORGANIZATION:
+    mspid: NAME_OF_ORGANIZATIONMSP
+    peers:
+      - peer1.DOMAIN_OF_ORGANIZATION
+      - peer2.DOMAIN_OF_ORGANIZATION
+    certificateAuthorities:
+      - ca.NAME_OF_ORGANIZATION.idonate.istad.co
+
+orderers:
+  orderer1.DOMAIN_OF_ORGANIZATION:
+    url: grpcs://orderer1.DOMAIN_OF_ORGANIZATION:7050
+    tlsCACerts:
+      path: ./crypto-config/ordererOrganizations/orderers/orderer1.DOMAIN_OF_ORGANIZATION/tls/ca.crt
+    grpcOptions:
+      ssl-target-name-override: orderer1.DOMAIN_OF_ORGANIZATION
+      hostnameOverride: orderer1.DOMAIN_OF_ORGANIZATION
+
+  orderer2.DOMAIN_OF_ORGANIZATION:
+    url: grpcs://orderer2.DOMAIN_OF_ORGANIZATION:8050
+    tlsCACerts:
+      path: ./crypto-config/ordererOrganizations/orderers/orderer2.DOMAIN_OF_ORGANIZATION/tls/ca.crt
+    grpcOptions:
+      ssl-target-name-override: orderer2.DOMAIN_OF_ORGANIZATION
+      hostnameOverride: orderer2.DOMAIN_OF_ORGANIZATION
+
+  orderer3.DOMAIN_OF_ORGANIZATION:
+    url: grpcs://orderer3.DOMAIN_OF_ORGANIZATION:9050
+    tlsCACerts:
+      path: ./crypto-config/ordererOrganizations/orderers/orderer3.DOMAIN_OF_ORGANIZATION/tls/ca.crt
+    grpcOptions:
+      ssl-target-name-override: orderer3.DOMAIN_OF_ORGANIZATION
+      hostnameOverride: orderer3.DOMAIN_OF_ORGANIZATION
+
+peers:
+  peer1.DOMAIN_OF_ORGANIZATION:
+    url: grpcs://peer1.DOMAIN_OF_ORGANIZATION:7051
+    tlsCACerts:
+      path: ./crypto-config/peerOrganizations/peers/peer1.DOMAIN_OF_ORGANIZATION/tls/ca.crt
+    grpcOptions:
+      ssl-target-name-override: peer1.DOMAIN_OF_ORGANIZATION
+      hostnameOverride: peer1.DOMAIN_OF_ORGANIZATION
+
+  peer2.DOMAIN_OF_ORGANIZATION:
+    url: grpcs://peer2.DOMAIN_OF_ORGANIZATION:7051
+    tlsCACerts:
+      path: ./crypto-config/peerOrganizations/peers/peer2.DOMAIN_OF_ORGANIZATION/tls/ca.crt
+    grpcOptions:
+      ssl-target-name-override: peer2.DOMAIN_OF_ORGANIZATION
+      hostnameOverride: peer2.DOMAIN_OF_ORGANIZATION
+
+certificateAuthorities:
+  ca.NAME_OF_ORGANIZATION.idonate.istad.co:
+    url: https://ca.NAME_OF_ORGANIZATION.idonate.istad.co:7054
+    caName: ca.NAME_OF_ORGANIZATION.idonate.istad.co
+    tlsCACerts:
+      path: ./ORGANIZATION_NAME_LOWERCASECa/tlsca/ca.ORGANIZATION_NAME_LOWERCASE.idonate.istad.co-cert.pem
+    httpOptions:
+      verify: false
+    registrar:
+      - enrollId: admin
+        enrollSecret: adminpw

@@ -1,0 +1,315 @@
+
+version: "3.7"
+
+networks:
+   idonate-istad-co-network_fabric:
+     external: true
+  # fabric:
+  #   driver: bridge
+
+volumes:
+  postgres_data:  
+
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=fabriccadb
+      - POSTGRES_USER=fabriccauser
+      - POSTGRES_PASSWORD=adminpw
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - idonate-istad-co-network_fabric
+  ca:
+    container_name: ca.ISTAD.idonate.istad.co
+    image: hyperledger/fabric-ca
+    command: sh -c 'fabric-ca-server start -d -b admin:adminpw --port 7054 --cfg.identities.allowremove'
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - FABRIC_CA_SERVER_HOME=/etc/hyperledger/fabric-ca
+      - FABRIC_CA_SERVER_CLIENT=/etc/hyperledger/fabric-ca-client
+      - FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/fabric-ca/tls-cert.pem 
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_CA_NAME=ca.ISTAD.idonate.istad.co
+      - FABRIC_CA_SERVER_CSR_CN=ca.ISTAD.idonate.istad.co
+      - FABRIC_CA_SERVER_CSR_HOSTS=ca.ISTAD.idonate.istad.co,172.17.0.1
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca/tlsca/ca.istad-key.pem
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca/tlsca/ca.istad-cert.pem
+      - FABRIC_CA_SERVER_DEBUG=false
+      - FABRIC_CA_SERVER_DB_TYPE=postgres
+      - FABRIC_CA_SERVER_DB_DATASOURCE=host=postgres port=5432 dbname=fabriccadb user=fabriccauser password=adminpw sslmode=disable
+      - FABRIC_CA_SERVER_CONFIG=/etc/hyperledger/fabric-ca-server/fabric-ca-server-config.yaml
+    volumes:
+      - ./istadCa/:/etc/hyperledger/fabric-ca
+      - ./istadCa/server:/etc/hyperledger/fabric-ca-server
+      - ./istadCa/client:/etc/hyperledger/fabric-ca-client
+      - ./ca-identity:/etc/hyperledger/artifacts
+    ports:
+      - 7054:7054
+    networks:
+      - idonate-istad-co-network_fabric  
+    depends_on:
+      - postgres    
+
+  peer:
+    container_name: peer1.ISTAD.idonate.istad.co
+    # address: peer1.${DOMAIN_OF_ORGANIZATION}
+    image: hyperledger/fabric-peer:latest
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=peer1.ISTAD.idonate.istad.co
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_ADDRESS=peer1.ISTAD.idonate.istad.co:7051
+      - CORE_PEER_GOSSIP_USELEADERELECTION=false
+      - CORE_PEER_GOSSIP_ORGLEADER=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9443
+      - CORE_METRICS_PROVIDER=prometheus
+      - CORE_CHAINCODE_LOGGING_LEVEL=debug
+      - CORE_CHAINCODE_KEEPALIVE=10
+      - CORE_CHAINCODE_ADDRESS=0.0.0.0:7052
+      - CORE_CHAINCODE_LISTEN=0.0.0.0:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_LOCALMSPID=ISTADMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/peer/users/Admin@peer1.ISTAD.idonate.istad.co/msp
+      - CORE_PEER_ADDRESS=peer1.ISTAD.idonate.istad.co:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.ISTAD.idonate.istad.co:7051
+      # - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=idonate-istad-co-network_fabric
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=idonate-istad-co-network_fabric
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+      - FABRIC_CFG_PATH=/etc/hyperledger/peerConfig
+      # Enable TLS
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/peer/peers/peer1.ISTAD.idonate.istad.co/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/peer/peers/peer1.ISTAD.idonate.istad.co/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/peers/peer1.ISTAD.idonate.istad.co/tls/ca.crt
+    working_dir: /etc/hyperledger/peer
+    ports:
+      - 7051:7051
+      - 7052:7052
+      - 9443:9443
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./crypto-config/peerOrganizations/:/etc/hyperledger/peer
+      - ./config:/etc/hyperledger/configtx
+      - ./peer-config:/etc/hyperledger/peerConfig
+    depends_on:
+      - orderer
+      - couchdb
+    networks:
+      - idonate-istad-co-network_fabric
+
+  peer2:
+    container_name: peer2.ISTAD.idonate.istad.co
+    image: hyperledger/fabric-peer:latest
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=peer2.ISTAD.idonate.istad.co
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_GOSSIP_USELEADERELECTION=false
+      - CORE_PEER_GOSSIP_ORGLEADER=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_CHAINCODE_LOGGING_LEVEL=debug
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9444
+      - CORE_METRICS_PROVIDER=prometheus
+      - CORE_PEER_LOCALMSPID=ISTADMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/peer/users/Admin@peer2.ISTAD.idonate.istad.co/msp
+      - CORE_PEER_ADDRESS=peer2.ISTAD.idonate.istad.co:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2.ISTAD.idonate.istad.co:7051
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=idonate-istad-co-network_fabric
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+      - FABRIC_CFG_PATH=/etc/hyperledger/peerConfig
+      # Enable TLS
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/peer/peers/peer2.ISTAD.idonate.istad.co/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/peer/peers/peer2.ISTAD.idonate.istad.co/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/peers/peer2.ISTAD.idonate.istad.co/tls/ca.crt
+    working_dir: /etc/hyperledger/peer
+    ports:
+      - 8051:8051
+      - 8052:8052
+      - 9444:9444
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./crypto-config/peerOrganizations/:/etc/hyperledger/peer
+      - ./config:/etc/hyperledger/configtx
+      - ./peer-config:/etc/hyperledger/peerConfig
+    depends_on:
+      - orderer
+      - couchdb
+    networks:
+      - idonate-istad-co-network_fabric
+
+  couchdb:
+    container_name: couchdb
+    image: hyperledger/fabric-couchdb
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw
+    ports:
+      - 5984:5984
+    networks:
+      - idonate-istad-co-network_fabric
+
+  cli:
+    container_name: cli
+    image: hyperledger/fabric-tools:latest
+    tty: true
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer1.ISTAD.idonate.istad.co:7051
+      - CORE_PEER_LOCALMSPID=ISTADMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto-config/peerOrganizations/users/Admin@peer1.ISTAD.idonate.istad.co/msp
+      - CORE_CHAINCODE_KEEPALIVE=10
+      # Enable TLS
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto-config/peerOrganizations/peers/peer1.ISTAD.idonate.istad.co/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto-config/peerOrganizations/peers/peer1.ISTAD.idonate.istad.co/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto-config/peerOrganizations/peers/peer1.ISTAD.idonate.istad.co/tls/ca.crt
+    working_dir: /etc/hyperledger
+    command: /bin/bash
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./crypto-config/:/etc/hyperledger/crypto-config
+      - ./config:/etc/hyperledger/artifacts
+      - ./chaincode:/etc/hyperledger/chaincode
+    networks:
+      - idonate-istad-co-network_fabric
+    depends_on:
+      - orderer
+      - peer
+      - couchdb
+
+  orderer:
+    container_name: orderer1.ISTAD.idonate.istad.co
+    image: hyperledger/fabric-orderer:latest
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:9445
+      - ORDERER_METRICS_PROVIDER=prometheus
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LOCALMSPID=ISTADOrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/orderer/msp
+      # enabled TLS
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_KAFKA_TOPIC_REPLICATIONFACTOR=1
+      - ORDERER_KAFKA_VERBOSE=true
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/etc/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/etc/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/etc/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=none
+      - ORDERER_CHANNELPARTICIPATION_ENABLED=true
+      - ORDERER_ADMIN_TLS_ENABLED=true
+      - ORDERER_ADMIN_TLS_CERTIFICATE=/etc/hyperledger/orderer/tls/server.crt
+      - ORDERER_ADMIN_TLS_PRIVATEKEY=/etc/hyperledger/orderer/tls/server.key
+      - ORDERER_ADMIN_TLS_ROOTCAS=[/etc/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_TLS_CLIENTROOTCAS=[/etc/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:7053
+    working_dir: /etc/hyperledger/
+    command: orderer
+    ports:
+      - 7050:7050
+      - 7053:7053
+      - 9445:9445
+    volumes:
+      - ./crypto-config/ordererOrganizations/orderers/orderer1.ISTAD.idonate.istad.co/:/etc/hyperledger/orderer
+      # - ./orderer.yaml:/etc/hyperledger/fabric/orderer.yaml
+    networks:
+      - idonate-istad-co-network_fabric
+
+  orderer2:
+    container_name: orderer2.ISTAD.idonate.istad.co
+    image: hyperledger/fabric-orderer:latest
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=8050
+      - ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:9446
+      - ORDERER_METRICS_PROVIDER=prometheus
+      - ORDERER_GENERAL_LOCALMSPID=ISTADOrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/orderer2/msp
+      # enabled TLS
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/orderer2/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/orderer2/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/orderer2/tls/ca.crt]
+      - ORDERER_KAFKA_TOPIC_REPLICATIONFACTOR=1
+      - ORDERER_KAFKA_VERBOSE=true
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/etc/hyperledger/orderer2/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/etc/hyperledger/orderer2/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/etc/hyperledger/orderer2/tls/ca.crt]
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=none
+      - ORDERER_CHANNELPARTICIPATION_ENABLED=true
+      - ORDERER_ADMIN_TLS_ENABLED=true
+      - ORDERER_ADMIN_TLS_CERTIFICATE=/etc/hyperledger/orderer2/tls/server.crt
+      - ORDERER_ADMIN_TLS_PRIVATEKEY=/etc/hyperledger/orderer2/tls/server.key
+      - ORDERER_ADMIN_TLS_ROOTCAS=[/etc/hyperledger/orderer2/tls/ca.crt]
+      - ORDERER_ADMIN_TLS_CLIENTROOTCAS=[/etc/hyperledger/orderer2/tls/ca.crt]
+      - ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:8053
+    working_dir: /etc/hyperledger/
+    command: orderer
+    ports:
+      - 8050:8050
+      - 8053:8053
+      - 9446:9446
+    volumes:
+      - ./crypto-config/ordererOrganizations/orderers/orderer2.ISTAD.idonate.istad.co/:/etc/hyperledger/orderer2
+      # - ./orderer.yaml:/etc/hyperledger/fabric/orderer.yaml
+    networks:
+      - idonate-istad-co-network_fabric
+
+  orderer3:
+    container_name: orderer3.ISTAD.idonate.istad.co
+    image: hyperledger/fabric-orderer:latest
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:9447
+      - ORDERER_METRICS_PROVIDER=prometheus
+      - ORDERER_GENERAL_LISTENPORT=9050
+      - ORDERER_GENERAL_LOCALMSPID=ISTADOrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/orderer3/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/orderer3/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/orderer3/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/orderer3/tls/ca.crt]
+      - ORDERER_KAFKA_TOPIC_REPLICATIONFACTOR=1
+      - ORDERER_KAFKA_VERBOSE=true
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/etc/hyperledger/orderer3/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/etc/hyperledger/orderer3/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/etc/hyperledger/orderer3/tls/ca.crt]
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=none
+      - ORDERER_CHANNELPARTICIPATION_ENABLED=true
+      - ORDERER_ADMIN_TLS_ENABLED=true
+      - ORDERER_ADMIN_TLS_CERTIFICATE=/etc/hyperledger/orderer3/tls/server.crt
+      - ORDERER_ADMIN_TLS_PRIVATEKEY=/etc/hyperledger/orderer3/tls/server.key
+      - ORDERER_ADMIN_TLS_ROOTCAS=[/etc/hyperledger/orderer3/tls/ca.crt]
+      - ORDERER_ADMIN_TLS_CLIENTROOTCAS=[/etc/hyperledger/orderer3/tls/ca.crt]
+      - ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:9053
+    working_dir: /etc/hyperledger/
+    command: orderer
+    ports:
+      - 9050:9050
+      - 9053:9053
+      - 9447:9447
+    volumes:
+      - ./crypto-config/ordererOrganizations/orderers/orderer3.ISTAD.idonate.istad.co/:/etc/hyperledger/orderer3
+      # - ./orderer.yaml:/etc/hyperledger/fabric/orderer.yaml
+    networks:
+      - idonate-istad-co-network_fabric

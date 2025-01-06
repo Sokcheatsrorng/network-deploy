@@ -1,0 +1,23 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ['alertname', 'instance']
+  group_wait: 10s
+  group_interval: 10m
+  repeat_interval: 1h
+  receiver: 'telegram-notifications'
+
+receivers:
+  - name: 'telegram-notifications'
+    telegram_configs:
+      - bot_token: '7784736317:AAEPZw-twWO9V3z1deGj5toQWNmX-GGduvo'
+        chat_id: -1002219036831
+        message: |-
+          🚨 [{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}
+          
+          Instance: {{ .CommonLabels.instance }}
+          Summary: {{ .CommonAnnotations.summary }}
+          Description: {{ .CommonAnnotations.description }}
+          
+          Started: {{ .StartsAt }}

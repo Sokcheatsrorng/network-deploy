@@ -1,0 +1,105 @@
+[
+    {
+        // init the defautl leadger for testing 
+        "invoke":"InitLedger",
+        "args":[]
+    },
+    {
+        // get all the donatin the ledger 
+        "query":"GetAllDonations",
+        "args":[]
+    },
+    {
+        // find the donation by id 
+        "query":"ReadDonation",
+        "args":[
+            "03a187b5f8321b772a9cc223ce16d125a9199ac7f42b09475a9fe7685c22582da6fef085faf520214c9eefb683372beb"
+        ]
+
+    },
+    {
+        // create donation 
+        "invoke":"CreateDonation",
+        "args":[
+            "",
+            // donation event 
+            "kevinEventOK9999911223344",
+            "kevin tido",
+            600,
+            "Dirnk water more pro!",
+            "CharityK"
+        ]
+    },
+    {
+        // update the  donation 
+        "invoke":"UpdateDonation",
+        "args":[
+            "donation6",
+            "kevin tido",
+            "600",
+            "Dirnk water pro!",
+            "CharityK",
+            "2023-11-13T10:00:00R"
+        ]
+    },
+    {
+        // DonationExists TRUE == EXSITING AND FALSE IS NOT EXSITING
+        "query":"DonationExists",
+        "args":[
+            "kevinEventOK99999112"
+        ]
+    },
+    {
+        // DELETE the donation by ID
+        "query":"DeleteDonation",
+        "args":[
+            "donation6"
+        ]
+    },
+    {
+    /*
+    "eventID": "EVT12345",
+    "recipient": "John Doe",
+    "eventDescription": "Fundraiser to support underprivileged youth with educational resources",
+    "organization": "EduForAll Foundation",
+    "timestamp": "2024-11-20T10:30:00Z"
+    */
+    //create DonationEvent
+    "invoke":"CreateDonationEvent",
+     "args":[
+        "kevinEventOK9999911223344556677889",
+        "Education form Org334 ",
+        "Kay Kang",
+        "The Pupose of creating this event is to motivite young generate to work harder!",
+        "ISTAD Organization"
+     ]
+    },
+    {
+      "query":"GetAllDonationEvents",
+      "args":[]
+    },
+    // get all DonationEvent 
+    {
+        "query":"ReadDonationEvent",
+        "args":[
+            "kevinEventOK9999911223344556677889"
+        ]
+    },
+    {
+        // update DonationEvent 
+        "invoke":"UpdateDonationEvent",
+        "args":[
+            "kevinEventOK124",
+            "Education for Young Boyyy",
+            "kevin-kang-tido ",
+            "The Pupose of creating this event is to motivite young generate to work harder!",
+            "ISTAD Organization"
+         ]
+    },
+    {
+        "invoke":"DeleteDonationEvent",
+        "args":[
+            "kevinEventOK124"
+        ]
+    }
+]

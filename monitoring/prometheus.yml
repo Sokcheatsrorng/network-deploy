@@ -1,0 +1,62 @@
+global:
+  # How frequently to scrape targets
+  scrape_interval:     10s
+  # How frequently to evaluate rules
+  evaluation_interval: 10s
+
+# Rules and alerts are read from the specified file(s)
+rule_files:
+  - alert.rules.yml
+
+# Alerting specifies settings related to the Alertmanager
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            # Alertmanager's default port is 9093
+            - localhost:9093
+
+# A list of scrape configurations that specifies a set of
+# targets and parameters describing how to scrape them.
+scrape_configs:
+  - job_name: 'prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets:
+          - localhost:9090
+
+  - job_name: "orderers"
+    static_configs:
+      - targets: 
+          - "orderer1.ISTAD.idonate.istad.co:9445"
+          - "orderer2.ISTAD.idonate.istad.co:9446"
+          - "orderer3.ISTAD.idonate.istad.co:9447"
+
+  - job_name: "peer1"
+    static_configs:
+      - targets: 
+          - "peer1.ISTAD.idonate.istad.co:9443"
+  
+  - job_name: "peer2"
+    static_configs:
+      - targets: 
+          - "peer2.ISTAD.idonate.istad.co:9444"
+
+  - job_name: 'node_exporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets:
+          - 172.18.0.13:9100
+
+  # - job_name: 'prom_middleware'
+  #   scrape_interval: 5s
+  #   static_configs:
+  #     - targets:
+  #         - 172.18.0.13:9091
+  - job_name: 'alertmanager'
+    scrape_interval: 5s
+    static_configs:
+      - targets:
+          - 72.18.0.14:9093
+
+

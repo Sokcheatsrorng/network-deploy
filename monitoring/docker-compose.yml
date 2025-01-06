@@ -1,0 +1,80 @@
+
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    hostname: prometheus
+    restart: always
+    tty: true
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      # - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'  
+      # - '--storage.tsdb.path=/prometheus'
+      # - '--web.enable-lifecycle'
+      # - '--web.console.libraries=/etc/prometheus/console_libraries'
+      # - '--web.console.templates=/etc/prometheus/consoles'
+    ports:
+      - 9090:9090
+    networks:
+      - idonate-istad-co-network_fabric
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    hostname: grafana
+    environment:
+      - GF_AUTH_PROXY_ENABLED=true
+      - GF_PATHS_PROVISIONING=/var/lib/grafana/provisioning/
+    volumes:
+      - ./provisioning/:/var/lib/grafana/provisioning/
+    ports:
+      - 3000:3000
+    networks:
+      - idonate-istad-co-network_fabric 
+    depends_on:
+      - prometheus
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    hostname: alertmanager
+    restart: always
+    tty: true
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    ports:
+      - 9093:9093
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'  
+    networks:
+      - idonate-istad-co-network_fabric
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    hostname: node-exporter
+    restart: unless-stopped
+    tty: true
+    ports:
+      - 9100:9100
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro  
+      - /run/udev/data:/run/udev/data:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'  
+    networks:
+      - idonate-istad-co-network_fabric    
+
+networks:
+  idonate-istad-co-network_fabric:
+    external: true    
+
+

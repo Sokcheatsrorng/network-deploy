@@ -1,0 +1,126 @@
+{
+  "name": "ISTAD_Network",
+  "version": "1.0.0",
+  "client": {
+    "organization": "ISTAD",
+    "connection": {
+      "timeout": {
+        "peer": {
+          "endorser": "300"
+        },
+        "orderer": "300"
+      }
+    },
+    "credentialStore": {
+      "path": "./wallet",
+      "cryptoStore": {
+        "path": "./wallet"
+      }
+    }
+  },
+  "channels": {
+    "idonatechannel": {
+      "orderers": [
+        "orderer1.ISTAD.idonate.istad.co",
+        "orderer2.ISTAD.idonate.istad.co",
+        "orderer3.ISTAD.idonate.istad.co"
+      ],
+      "peers": {
+        "peer1.ISTAD.idonate.istad.co": {
+          "endorsingPeer": true,
+          "chaincodeQuery": true,
+          "ledgerQuery": true,
+          "eventSource": true
+        },
+        "peer2.ISTAD.idonate.istad.co": {
+          "endorsingPeer": true,
+          "chaincodeQuery": true,
+          "ledgerQuery": true,
+          "eventSource": true
+        }
+      }
+    }
+  },
+  "organizations": {
+    "ISTAD": {
+      "mspid": "ISTADMSP",
+      "peers": [
+        "peer1.ISTAD.idonate.istad.co",
+        "peer2.ISTAD.idonate.istad.co"
+      ],
+      "certificateAuthorities": [
+        "ca.ISTAD.idonate.istad.co"
+      ]
+    }
+  },
+  "orderers": {
+    "orderer1.{ISTAD.idonate.istad.co}": {
+      "url": "grpcs://orderer1.ISTAD.idonate.istad.co:7050",
+      "tlsCACerts": {
+        "path": "./crypto-config/ordererOrganizations/orderers/orderer1.ISTAD.idonate.istad.co/tls/ca.crt"
+      },
+      "grpcOptions": {
+        "ssl-target-name-override": "orderer1.ISTAD.idonate.istad.co",
+        "hostnameOverride": "orderer1.ISTAD.idonate.istad.co"
+      }
+    },
+    "orderer2.ISTAD.idonate.istad.co": {
+      "url": "grpcs://orderer2.ISTAD.idonate.istad.co:8050",
+      "tlsCACerts": {
+        "path": "./crypto-config/ordererOrganizations/orderers/orderer2.ISTAD.idonate.istad.co/tls/ca.crt"
+      },
+      "grpcOptions": {
+        "ssl-target-name-override": "orderer2.ISTAD.idonate.istad.co",
+        "hostnameOverride": "orderer2.ISTAD.idonate.istad.co"
+      }
+    },
+    "orderer3.ISTAD.idonate.istad.co": {
+      "url": "grpcs://orderer3.ISTAD.idonate.istad.co:9050",
+      "tlsCACerts": {
+        "path": "./crypto-config/ordererOrganizations/orderers/orderer3.ISTAD.idonate.istad.co/tls/ca.crt"
+      },
+      "grpcOptions": {
+        "ssl-target-name-override": "orderer3.ISTAD.idonate.istad.co",
+        "hostnameOverride": "orderer3.ISTAD.idonate.istad.co"
+      }
+    }
+  },
+  "peers": {
+    "peer1.ISTAD.idonate.istad.co": {
+      "url": "grpcs://peer1.ISTAD.idonate.istad.co:7051",
+      "tlsCACerts": {
+        "path": "./crypto-config/peerOrganizations/peers/peer1.ISTAD.idonate.istad.co/tls/ca.crt"
+      },
+      "grpcOptions": {
+        "ssl-target-name-override": "peer1.ISTAD.idonate.istad.co",
+        "hostnameOverride": "peer1.ISTAD.idonate.istad.co"
+      }
+    },
+    "peer2.ISTAD.idonate.istad.co": {
+      "url": "grpcs://peer2.ISTAD.idonate.istad.co:7051",
+      "tlsCACerts": {
+        "path": "./crypto-config/peerOrganizations/peers/peer2.ISTAD.idonate.istad.co/tls/ca.crt"
+      },
+      "grpcOptions": {
+        "ssl-target-name-override": "peer2.ISTAD.idonate.istad.co",
+        "hostnameOverride": "peer2.ISTAD.idonate.istad.co"
+      }
+    }
+  },
+  "certificateAuthorities": {
+    "ca.ISTAD.idonate.istad.co": {
+      "url": "https://ca.ISTAD.idonate.istad.co:7054",
+      "caName": "ca.ISTAD.idonate.istad.co",
+      "tlsCACerts": {
+        "path": "./istadCa/tlsca/ca.istad.idonate.istad.co-cert.pem"
+      },
+      "httpOptions": {
+        "verify": false
+      },
+      "registrar": [{
+        "enrollId": "admin",
+        "enrollSecret": "adminpw"
+      }]
+    }
+  }
+}
